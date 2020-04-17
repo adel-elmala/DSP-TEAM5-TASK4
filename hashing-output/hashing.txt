@@ -1,0 +1,6 @@
+{ 
+Name:Sam Smith_Too_Good_At_Goodbyes_vocals_05,spectHash:ad1dc053ca32f956,mffcHash:aef920d02dd328d7,tonnetzHash:f0c38eb871c70f38,chromaHash:f1ed31168650b1cf;
+Name:Sia_Alive_05,spectHash:837dc48778786c78,mffcHash:e0f807fc037c837c,tonnetzHash:83bdcc030bbc7d43,chromaHash:b258c44e1d861ff5;
+Name:Sam Smith_Too_Good_At_Goodbyes_music_05,spectHash:d42b914ea35d833d,mffcHash:d8a3568b549b542f,tonnetzHash:b0a8cfd7302869d7,chromaHash:94735c0f8de3658c;
+Name:Sam Smith_Too_Good_At_Goodbyes_05,spectHash:a42fd046d37cd354,mffcHash:88f326db24932c5f,tonnetzHash:b2e08ddf722424db,chromaHash:b07b785f8d632584;
+} 
