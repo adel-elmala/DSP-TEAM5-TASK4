@@ -10,6 +10,7 @@ from PIL import Image
 import librosa.display
 import glob
 import gc
+import functools
 
 
 
@@ -48,9 +49,10 @@ import gc
 
 class audioSpectogram():
 
-    def __init__(self,path:str,id:int):
+    def __init__(self,path:str,id:int = 0,hashingMode:str="perception"):
         self.path = path
         self.id = id
+        self.hashMode = hashingMode
         self.samples = None
         self.sample_rate = None
         self.lenght = None
@@ -114,15 +116,18 @@ class audioSpectogram():
     def setData(self):
         spect = self.spectro()
         ft1,ft2,ft3 = self.features()
-        self.spectHash = self.hashFile(spect)
-        self.mffcHash  = self.hashFile(ft1)
-        self.tonnetzHash = self.hashFile(ft2)
-        self.chromaHash = self.hashFile(ft3)
-        print(ft1,ft2,ft3)
-        print('spect: ',self.hashFile(spect))
-        print('mffc: ',self.hashFile(ft1))
-        print('tonnetz: ',self.hashFile(ft2))
-        print('chroma: ',self.hashFile(ft3))
+        self.spectHash = self.hashFile(spect,self.hashMode)
+        self.mffcHash  = self.hashFile(ft1,self.hashMode)
+        self.tonnetzHash = self.hashFile(ft2,self.hashMode)
+        self.chromaHash = self.hashFile(ft3,self.hashMode)
+        print(spect,ft1,ft2,ft3)
+        print('spect: ',self.hashFile(spect,self.hashMode))
+        print('mffc: ',self.hashFile(ft1,self.hashMode))
+        print('tonnetz: ',self.hashFile(ft2,self.hashMode))
+        print('chroma: ',self.hashFile(ft3,self.hashMode))
+        print("mode:",self.hashMode)
+        print(type(self.spectHash))
+        print(self.spectHash - self.spectHash)
         print(self.path) 
 
     def getData(self):
@@ -150,8 +155,15 @@ class audioSpectogram():
         return spectFig
     
     
-    def hashFile(self,figure:str): # Hashing function , returns a string
-        hash = imagehash.phash(Image.open(figure))
+    def hashFile(self,figure:str,mode:str = "perception"): # Hashing function , returns a string
+        if mode == "average":
+            hash = imagehash.average_hash(Image.open(figure))
+        elif mode == "perception":    
+            hash = imagehash.phash(Image.open(figure))
+        elif mode == "difference":
+            hash = imagehash.dhash(Image.open(figure))
+        elif mode == "wavelet":
+            hash = imagehash.whash(Image.open(figure))    
         # print(hash)
         return hash
 
@@ -188,10 +200,10 @@ class audioSpectogram():
         return (mffcFig,tonnetzFig,chromaFig)
 
 
-# hehe = audioSpectogram('/home/adel/dsp-task4/Sam Smith_Too_Good_At_Goodbyes_vocals_05.mp3')
+# hehe = audioSpectogram('/home/adel/dsp-task4/songs/Sam Smith_Too_Good_At_Goodbyes_vocals_05.mp3')
 # hehe = audioSpectogram('Sam Smith_Too_Good_At_Goodbyes_music_05.mp3')
 # hehe = audioSpectogram('Sam Smith_Too_Good_At_Goodbyes_05.mp3')
-# hehe = audioSpectogram('Sia_Alive_05.mp3')
+# hehe = audioSpectogram('Sia_Alive_05.mp3',0)
 
 
 
@@ -210,25 +222,75 @@ def stripName(path:str):
     print(songNameLst)
     return songName
 
-def  generateTxt():
+def  generateTxt(inputMixedSong : 'audioSpectogram',hashMode:str="perception"):
     files =  loopFolder('/home/adel/dsp-task4/songs','.mp3')
     hashFile = open("hashing-output/hashing.txt","w") 
-    
+    similarityScore = open("hashing-output/similarityScore.txt","w")
+    MixedSpectHash,MixedMffcHash,MixedTonnetzHash,MixedChromaHash,MixedTimes,MixedFrequencies,MixedSpectrogram = inputMixedSong.getData()
+
     hashFile.write("{ \n") 
     for i in range(len(files)):
         songName =  stripName(files[i])
 
         print("NAME: ",songName)
         spectFile = open("spectrogram-output/"+songName+".txt","w")    # needs to be filled with arrays
-        song = audioSpectogram(files[i],i)
+        song = audioSpectogram(files[i],i,hashMode)
         spectHash,mffcHash,tonnetzHash,chromaHash,times,frequencies,spectrogram = song.getData()        
-       
-        hashFile.write("Name:{},spectHash:{},mffcHash:{},tonnetzHash:{},chromaHash:{};\n".format(songName,spectHash,mffcHash,tonnetzHash,chromaHash))
+        
+        hashFile.write("Name:{},spectHash:{},mffcHash:{},tonnetzHash:{},chromaHash:{}\n".format(songName,spectHash,mffcHash,tonnetzHash,chromaHash))
         spectFile.close()
+        spectScore = 100 - (spectHash - MixedSpectHash)
+        mffcScore = 100 - (mffcHash - MixedMffcHash)
+        tonnetzScore = 100 - (tonnetzHash - MixedTonnetzHash)
+        chromaScore = 100 - (chromaHash - MixedChromaHash)
+        totalScore = (spectScore + mffcScore + tonnetzScore + chromaScore)/4
+        print("totalScore:",totalScore)
+        print("spectScore:",spectScore)
+        print("mffcScore:",mffcScore)
+        print("tonnetzScore:",tonnetzScore)
+        print("chromaScore:",chromaScore)
+        similarityScore.write("{},{},{},{},{}\n".format(songName,spectScore,mffcScore,tonnetzScore,totalScore))
+        
+        
         del song
         gc.collect()
     hashFile.write("} \n")     
     hashFile.close()
-    
-# loopFolder('/home/adel/dsp-task4','.mp3')
-generateTxt()
+    similarityScore.close()
+# # loopFolder('/home/adel/dsp-task4','.mp3')
+# hehe = audioSpectogram('/home/adel/dsp-task4/songs/Sia_Alive_05.mp3',99,"difference")
+
+hehe = audioSpectogram('/home/adel/dsp-task4/songs/Sam Smith_Too_Good_At_Goodbyes_vocals_05.mp3',99,"wavelet")
+
+
+generateTxt(hehe,"wavelet")
+
+def readFromTxt():
+    hashFile = open("hashing-output/hashing.txt",'r')
+    songsData =  hashFile.read().split('\n')[1:-2]
+    # print(songsData[0])
+    return songsData
+
+def extractFromline(dataLine:str):
+    dataLine = list(map(functools.partial(str.split,sep = ','),dataLine))
+    # print(dataLine[0])
+    # print("before",len(dataLine))
+    for i in range(len(dataLine)):
+
+        dataLine[i] = list(map(functools.partial(str.split,sep = ':'),dataLine[i]))
+        for j in range(len(dataLine[i])):
+            
+            dataLine[i][j] = dataLine[i][j][-1]
+    return dataLine
+
+def similarity(inputMixedSong : 'audioSpectogram'):
+    MixedSpectHash,MixedMffcHash,MixedTonnetzHash,MixedChromaHash,MixedTimes,MixedFrequencies,MixedSpectrogram = inputMixedSong.getData()
+
+    searchIn = extractFromline(readFromTxt())
+
+
+# songslist = readFromTxt()
+# extractedsongsData = extractFromline(songslist)
+# print(extractedsongsData)
+# print(len(extractedsongsData))
+# print(imagehash.ImageHash("ad1dc053ca32f956"))

@@ -1,0 +1,4 @@
+Sam Smith_Too_Good_At_Goodbyes_vocals_05,100,100,100,100.0
+Sia_Alive_05,84,78,88,79.0
+Sam Smith_Too_Good_At_Goodbyes_music_05,72,76,92,78.0
+Sam Smith_Too_Good_At_Goodbyes_05,92,84,94,86.5
