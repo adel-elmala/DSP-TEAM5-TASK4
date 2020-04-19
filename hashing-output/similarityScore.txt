@@ -1,4 +1,6 @@
-Sam Smith_Too_Good_At_Goodbyes_vocals_05,80,80,80,64,76.0
-Sia_Alive_05,90,92,78,96,89.0
-Sam Smith_Too_Good_At_Goodbyes_music_05,80,94,80,80,83.5
-Sam Smith_Too_Good_At_Goodbyes_05,90,90,78,72,82.5
+Sam Smith_Too_Good_At_Goodbyes_vocals_05,68,76,60,72,69.0
+Sia_Alive_05,76,76,80,66,74.5
+Fly_Me_To_The_Moon_08,68,72,54,66,65.0
+Berlin_ BellaCiao_22,68,68,70,68,68.5
+Indila_Boite En Argent_07,66,90,84,86,81.5
+Declan Galbraith_Tell me why _vocals_24,88,90,72,84,83.5
